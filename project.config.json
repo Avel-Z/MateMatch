@@ -39,6 +39,7 @@
     "showES6CompileOption": false,
     "useCompilerPlugins": false
   },
+  "_comment_appid": "TODO: 请替换为你的小程序AppID，可在微信公众平台获取",
   "appid": "wxxxxxxxxxxx",
   "projectname": "MateMatch",
   "description": "搭子引力 - 轻量级兴趣约伴平台",

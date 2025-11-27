@@ -64,7 +64,7 @@
           </view>
         </view>
         <image 
-          src="{{app.globalData.userInfo.avatarUrl || '/images/default-avatar.png'}}" 
+          src="{{currentUserAvatar || '/images/default-avatar.png'}}" 
           class="message-avatar"
         ></image>
       </block>

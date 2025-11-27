@@ -14,14 +14,16 @@ Page({
     needInfo: null,
     isLoading: true,
     scrollToMessage: '',
-    keyboardHeight: 0
+    keyboardHeight: 0,
+    currentUserAvatar: ''
   },
 
   onLoad: function(options) {
     this.setData({
       needId: options.needId || '',
       userId: options.userId || '',
-      chatId: options.chatId || ''
+      chatId: options.chatId || '',
+      currentUserAvatar: app.globalData.userInfo ? app.globalData.userInfo.avatarUrl : ''
     })
     
     this.loadChatInfo()

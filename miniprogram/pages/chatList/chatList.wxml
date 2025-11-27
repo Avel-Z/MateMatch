@@ -1,0 +1,51 @@
+<!--pages/chatList/chatList.wxml-->
+<view class="container">
+  <!-- 加载中 -->
+  <view class="loading-container" wx:if="{{isLoading}}">
+    <view class="loading-spinner"></view>
+    <text>加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-container" wx:if="{{!isLoading && conversations.length === 0}}">
+    <image src="/images/chat-empty.png" class="empty-icon"></image>
+    <text class="empty-text">暂无消息</text>
+    <text class="empty-tip">去发现页面找个搭子聊聊吧</text>
+  </view>
+
+  <!-- 会话列表 -->
+  <view class="conversation-list" wx:if="{{!isLoading && conversations.length > 0}}">
+    <view 
+      class="conversation-item" 
+      wx:for="{{conversations}}" 
+      wx:key="_id"
+      bindtap="enterChat"
+      data-conv="{{item}}"
+      bindlongpress="deleteConversation"
+      data-index="{{index}}"
+    >
+      <!-- 头像 -->
+      <view class="avatar-wrapper">
+        <image src="{{item.targetUserAvatar || '/images/default-avatar.png'}}" class="conversation-avatar"></image>
+        <view class="unread-badge" wx:if="{{item.unreadCount > 0}}">
+          {{item.unreadCount > 99 ? '99+' : item.unreadCount}}
+        </view>
+      </view>
+      
+      <!-- 会话信息 -->
+      <view class="conversation-info">
+        <view class="conversation-header">
+          <text class="conversation-name">{{item.targetUserName || '用户'}}</text>
+          <text class="conversation-time">{{item.lastMessageTimeFormatted}}</text>
+        </view>
+        <view class="conversation-preview">
+          <text class="preview-text">{{item.lastMessage}}</text>
+        </view>
+        <view class="conversation-need" wx:if="{{item.needTitle}}">
+          <view class="tag tag-category small">{{item.needCategory}}</view>
+          <text class="need-title">{{item.needTitle}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

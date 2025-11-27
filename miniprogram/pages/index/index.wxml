@@ -1,0 +1,94 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 顶部分类筛选 -->
+  <view class="category-bar">
+    <scroll-view scroll-x="true" class="category-scroll">
+      <view 
+        wx:for="{{categories}}" 
+        wx:key="*this"
+        class="category-item {{selectedCategory === item ? 'active' : ''}}"
+        bindtap="selectCategory"
+        data-category="{{item}}"
+      >
+        {{item}}
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 地图区域 -->
+  <view class="map-container">
+    <map
+      id="needMap"
+      class="map"
+      latitude="{{latitude}}"
+      longitude="{{longitude}}"
+      scale="{{scale}}"
+      markers="{{markers}}"
+      show-location="true"
+      bindmarkertap="onMarkerTap"
+      bindregionchange="onRegionChange"
+    ></map>
+    
+    <!-- 刷新位置按钮 -->
+    <view class="refresh-btn" bindtap="refreshLocation">
+      <image src="/images/location.png" class="refresh-icon"></image>
+    </view>
+    
+    <!-- 加载提示 -->
+    <view class="loading-overlay" wx:if="{{isLoading}}">
+      <view class="loading-content">
+        <view class="loading-spinner"></view>
+        <text>加载中...</text>
+      </view>
+    </view>
+    
+    <!-- 位置错误提示 -->
+    <view class="error-overlay" wx:if="{{locationError}}">
+      <view class="error-content">
+        <image src="/images/location-error.png" class="error-icon"></image>
+        <text class="error-text">无法获取位置信息</text>
+        <button class="btn-primary" bindtap="refreshLocation">重新获取</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 需求卡片弹窗 -->
+  <view class="need-card-overlay {{showNeedCard ? 'show' : ''}}" bindtap="closeNeedCard">
+    <view class="need-card" catchtap="">
+      <view class="need-card-header">
+        <view class="need-title">{{selectedNeed.title}}</view>
+        <view class="tag tag-category">{{selectedNeed.category}}</view>
+      </view>
+      
+      <view class="need-card-body">
+        <view class="need-info-item">
+          <image src="/images/time.png" class="info-icon"></image>
+          <text>{{selectedNeed.activityTimeFormatted}}</text>
+        </view>
+        <view class="need-info-item">
+          <image src="/images/location-pin.png" class="info-icon"></image>
+          <text>{{selectedNeed.locationName}}</text>
+        </view>
+        <view class="need-description">{{selectedNeed.description}}</view>
+      </view>
+      
+      <view class="need-card-footer">
+        <view class="need-publisher">
+          <image src="{{selectedNeed.publisherAvatar || '/images/default-avatar.png'}}" class="publisher-avatar"></image>
+          <text class="publisher-name">{{selectedNeed.publisherName || '匿名用户'}}</text>
+          <view class="trust-tags" wx:if="{{selectedNeed.publisherTags}}">
+            <text class="tag tag-trust" wx:for="{{selectedNeed.publisherTags}}" wx:key="*this">{{item}}</text>
+          </view>
+        </view>
+        <button class="btn-primary view-detail-btn" bindtap="viewNeedDetail">查看详情</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 无需求提示 -->
+  <view class="empty-tip" wx:if="{{!isLoading && needs.length === 0 && !locationError}}">
+    <image src="/images/empty.png" class="empty-icon"></image>
+    <text class="empty-text">附近暂无搭子需求</text>
+    <button class="btn-primary" bindtap="goToPost">发布第一个需求</button>
+  </view>
+</view>

@@ -1,0 +1,136 @@
+<!--pages/profile/profile.wxml-->
+<view class="container">
+  <!-- 未登录状态 -->
+  <view class="login-prompt" wx:if="{{!isLogin || !userInfo}}">
+    <image src="/images/default-avatar.png" class="login-avatar"></image>
+    <text class="login-text">登录后开始你的搭子之旅</text>
+    <button class="login-btn" bindtap="getUserProfile">微信登录</button>
+  </view>
+
+  <!-- 已登录状态 -->
+  <block wx:else>
+    <!-- 用户信息卡片 -->
+    <view class="profile-card">
+      <view class="profile-header">
+        <image src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" class="profile-avatar"></image>
+        <view class="profile-info">
+          <text class="profile-name">{{userInfo.nickName || '搭子用户'}}</text>
+          <view class="trust-tags">
+            <text class="tag tag-trust" wx:for="{{trustTags}}" wx:key="*this">{{item}}</text>
+            <text class="no-tags" wx:if="{{trustTags.length === 0}}">完成活动获得信用标签</text>
+          </view>
+        </view>
+        <view class="edit-btn" bindtap="editProfile" wx:if="{{isCurrentUser}}">
+          <image src="/images/edit.png" class="edit-icon"></image>
+        </view>
+      </view>
+
+      <!-- 统计数据 -->
+      <view class="stats-row">
+        <view class="stat-item">
+          <text class="stat-value">{{stats.needsCount}}</text>
+          <text class="stat-label">发布</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{stats.completedCount}}</text>
+          <text class="stat-label">完成</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{stats.responsesCount}}</text>
+          <text class="stat-label">响应</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 我的需求/响应（仅当前用户） -->
+    <view class="my-section" wx:if="{{isCurrentUser}}">
+      <!-- 标签切换 -->
+      <view class="tab-bar">
+        <view 
+          class="tab-item {{activeTab === 'needs' ? 'active' : ''}}" 
+          bindtap="switchTab" 
+          data-tab="needs"
+        >我的发布</view>
+        <view 
+          class="tab-item {{activeTab === 'responses' ? 'active' : ''}}" 
+          bindtap="switchTab" 
+          data-tab="responses"
+        >我的响应</view>
+      </view>
+
+      <!-- 需求列表 -->
+      <view class="need-list" wx:if="{{activeTab === 'needs'}}">
+        <view 
+          class="need-item" 
+          wx:for="{{myNeeds}}" 
+          wx:key="_id"
+          bindtap="viewNeedDetail"
+          data-id="{{item._id}}"
+        >
+          <view class="need-item-header">
+            <text class="need-item-title">{{item.title}}</text>
+            <view class="tag {{item.status === 'active' ? 'tag-status' : 'tag-completed'}}">
+              {{item.status === 'active' ? '进行中' : (item.status === 'completed' ? '已完成' : '已取消')}}
+            </view>
+          </view>
+          <view class="need-item-info">
+            <view class="tag tag-category">{{item.category}}</view>
+            <text class="need-item-time">{{item.activityTimeFormatted}}</text>
+          </view>
+          <view class="need-item-stats">
+            <text>{{item.responseCount || 0}}人响应</text>
+          </view>
+        </view>
+
+        <view class="empty-list" wx:if="{{myNeeds.length === 0}}">
+          <text>还没有发布过需求</text>
+        </view>
+      </view>
+
+      <!-- 响应列表 -->
+      <view class="need-list" wx:if="{{activeTab === 'responses'}}">
+        <view 
+          class="need-item" 
+          wx:for="{{myResponses}}" 
+          wx:key="_id"
+          bindtap="viewNeedDetail"
+          data-id="{{item._id}}"
+        >
+          <view class="need-item-header">
+            <text class="need-item-title">{{item.title}}</text>
+            <view class="tag {{item.status === 'active' ? 'tag-status' : 'tag-completed'}}">
+              {{item.status === 'active' ? '进行中' : (item.status === 'completed' ? '已完成' : '已取消')}}
+            </view>
+          </view>
+          <view class="need-item-info">
+            <view class="tag tag-category">{{item.category}}</view>
+            <text class="need-item-time">{{item.activityTimeFormatted}}</text>
+          </view>
+        </view>
+
+        <view class="empty-list" wx:if="{{myResponses.length === 0}}">
+          <text>还没有响应过需求</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 设置菜单（仅当前用户） -->
+    <view class="menu-section" wx:if="{{isCurrentUser}}">
+      <view class="menu-item" bindtap="showAbout">
+        <image src="/images/about.png" class="menu-icon"></image>
+        <text class="menu-text">关于我们</text>
+        <image src="/images/arrow-right.png" class="menu-arrow"></image>
+      </view>
+      <button class="menu-item" open-type="share">
+        <image src="/images/share.png" class="menu-icon"></image>
+        <text class="menu-text">分享给好友</text>
+        <image src="/images/arrow-right.png" class="menu-arrow"></image>
+      </button>
+      <button class="menu-item" open-type="feedback">
+        <image src="/images/feedback.png" class="menu-icon"></image>
+        <text class="menu-text">意见反馈</text>
+        <image src="/images/arrow-right.png" class="menu-arrow"></image>
+      </button>
+    </view>
+  </block>
+</view>

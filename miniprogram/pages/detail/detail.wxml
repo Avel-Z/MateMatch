@@ -1,0 +1,113 @@
+<!--pages/detail/detail.wxml-->
+<view class="container" wx:if="{{!isLoading && need}}">
+  <!-- 需求信息卡片 -->
+  <view class="detail-card">
+    <view class="card-header">
+      <view class="title-row">
+        <text class="need-title">{{need.title}}</text>
+        <view class="tag tag-category">{{need.category}}</view>
+      </view>
+      <view class="status-row" wx:if="{{need.status !== 'active'}}">
+        <view class="tag {{need.status === 'completed' ? 'tag-completed' : 'tag-cancelled'}}">
+          {{need.status === 'completed' ? '已完成' : '已取消'}}
+        </view>
+      </view>
+    </view>
+
+    <view class="card-body">
+      <!-- 时间 -->
+      <view class="info-row">
+        <image src="/images/time.png" class="info-icon"></image>
+        <view class="info-content">
+          <text class="info-label">活动时间</text>
+          <text class="info-value">{{need.activityTimeFormatted}}</text>
+        </view>
+      </view>
+      
+      <!-- 地点 -->
+      <view class="info-row" bindtap="openNavigation">
+        <image src="/images/location-pin.png" class="info-icon"></image>
+        <view class="info-content">
+          <text class="info-label">活动地点</text>
+          <text class="info-value link">{{need.locationName}}</text>
+        </view>
+        <image src="/images/navigation.png" class="nav-icon"></image>
+      </view>
+      
+      <!-- 人数 -->
+      <view class="info-row">
+        <image src="/images/people.png" class="info-icon"></image>
+        <view class="info-content">
+          <text class="info-label">需要人数</text>
+          <text class="info-value">{{need.peopleNeeded}}人</text>
+        </view>
+        <view class="tag tag-aa" wx:if="{{need.isAA}}">AA制</view>
+      </view>
+      
+      <!-- 描述 -->
+      <view class="description-section" wx:if="{{need.description}}">
+        <text class="description-title">详细说明</text>
+        <text class="description-content">{{need.description}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 发布者信息 -->
+  <view class="publisher-card" bindtap="viewPublisher">
+    <image src="{{need.publisherAvatar || '/images/default-avatar.png'}}" class="publisher-avatar"></image>
+    <view class="publisher-info">
+      <text class="publisher-name">{{need.publisherName || '匿名用户'}}</text>
+      <view class="publisher-tags">
+        <text class="tag tag-trust" wx:for="{{need.publisherTags}}" wx:key="*this">{{item}}</text>
+      </view>
+    </view>
+    <view class="publish-time">{{need.createTimeFormatted}}发布</view>
+    <image src="/images/arrow-right.png" class="arrow-icon"></image>
+  </view>
+
+  <!-- 小地图预览 -->
+  <view class="map-preview" wx:if="{{need.location}}">
+    <map
+      class="preview-map"
+      latitude="{{need.location.coordinates[1]}}"
+      longitude="{{need.location.coordinates[0]}}"
+      scale="15"
+      markers="{{[{id: 0, latitude: need.location.coordinates[1], longitude: need.location.coordinates[0], iconPath: '/images/marker-default.png', width: 40, height: 40}]}}"
+      show-location="false"
+      bindtap="openNavigation"
+    ></map>
+    <view class="map-tip">点击地图开启导航</view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="action-bar" wx:if="{{need.status === 'active'}}">
+    <block wx:if="{{!isOwner}}">
+      <view class="respond-input-area">
+        <input 
+          class="respond-input" 
+          placeholder="说点什么打个招呼..."
+          value="{{respondMessage}}"
+          bindinput="onRespondMessageInput"
+        />
+      </view>
+      <button class="btn-respond" bindtap="respondToNeed">
+        {{hasResponded ? '已响应' : '我想加入'}}
+      </button>
+    </block>
+    <block wx:else>
+      <button class="btn-complete" bindtap="updateStatus" data-status="completed">标记完成</button>
+      <button class="btn-cancel" bindtap="updateStatus" data-status="cancelled">取消需求</button>
+    </block>
+  </view>
+</view>
+
+<!-- 加载中 -->
+<view class="loading-container" wx:if="{{isLoading}}">
+  <view class="loading-spinner"></view>
+  <text>加载中...</text>
+</view>
+
+<!-- 分享按钮 -->
+<button class="share-btn" open-type="share" wx:if="{{!isLoading && need}}">
+  <image src="/images/share.png" class="share-icon"></image>
+</button>

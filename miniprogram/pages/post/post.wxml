@@ -1,0 +1,96 @@
+<!--pages/post/post.wxml-->
+<view class="container">
+  <view class="form-container">
+    <!-- 标题输入 -->
+    <view class="form-section">
+      <view class="section-title">需求标题 <text class="required">*</text></view>
+      <input 
+        class="input-field" 
+        placeholder="如：今天下午去XX美术馆，求搭子" 
+        value="{{title}}"
+        bindinput="onTitleInput"
+        maxlength="50"
+      />
+      <view class="char-count">{{title.length}}/50</view>
+    </view>
+
+    <!-- 详细描述 -->
+    <view class="form-section">
+      <view class="section-title">详细说明</view>
+      <textarea 
+        class="textarea-field" 
+        placeholder="可以补充更多细节，如费用说明、特殊要求等"
+        value="{{description}}"
+        bindinput="onDescriptionInput"
+        maxlength="200"
+      />
+      <view class="char-count">{{description.length}}/200</view>
+    </view>
+
+    <!-- 分类选择 -->
+    <view class="form-section">
+      <view class="section-title">活动分类 <text class="required">*</text></view>
+      <picker mode="selector" range="{{categories}}" bindchange="onCategoryChange">
+        <view class="picker-field {{category ? '' : 'placeholder'}}">
+          {{category || '请选择活动分类'}}
+          <image src="/images/arrow-right.png" class="arrow-icon"></image>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 活动时间 -->
+    <view class="form-section">
+      <view class="section-title">活动时间 <text class="required">*</text></view>
+      <view class="time-picker-group">
+        <picker mode="date" start="{{minDate}}" end="{{maxDate}}" bindchange="onDateChange">
+          <view class="picker-field half {{activityDate ? '' : 'placeholder'}}">
+            {{activityDate || '选择日期'}}
+          </view>
+        </picker>
+        <picker mode="time" bindchange="onTimeChange">
+          <view class="picker-field half {{activityTime ? '' : 'placeholder'}}">
+            {{activityTime || '选择时间'}}
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 活动地点 -->
+    <view class="form-section">
+      <view class="section-title">活动地点 <text class="required">*</text></view>
+      <view class="picker-field {{locationName ? '' : 'placeholder'}}" bindtap="chooseLocation">
+        <image src="/images/location-pin.png" class="location-icon"></image>
+        {{locationName || '点击选择地点'}}
+        <image src="/images/arrow-right.png" class="arrow-icon"></image>
+      </view>
+    </view>
+
+    <!-- 需要人数 -->
+    <view class="form-section">
+      <view class="section-title">需要人数</view>
+      <view class="people-counter">
+        <view class="counter-btn {{peopleNeeded <= 1 ? 'disabled' : ''}}" bindtap="changePeopleCount" data-type="minus">-</view>
+        <text class="counter-value">{{peopleNeeded}}</text>
+        <view class="counter-btn {{peopleNeeded >= 10 ? 'disabled' : ''}}" bindtap="changePeopleCount" data-type="add">+</view>
+      </view>
+    </view>
+
+    <!-- AA制开关 -->
+    <view class="form-section row">
+      <view class="section-title">AA制费用</view>
+      <switch checked="{{isAA}}" bindchange="toggleAA" color="#FF6B6B" />
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-area">
+    <button 
+      class="submit-btn {{isSubmitting ? 'disabled' : ''}}" 
+      bindtap="submitNeed"
+      disabled="{{isSubmitting}}"
+    >
+      {{isSubmitting ? '发布中...' : '发布需求'}}
+    </button>
+    <view class="submit-tip">发布后可在"我的"页面管理需求</view>
+  </view>
+</view>

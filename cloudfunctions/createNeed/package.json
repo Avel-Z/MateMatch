@@ -1,0 +1,11 @@
+{
+  "name": "createNeed",
+  "version": "1.0.0",
+  "description": "创建搭子需求",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

@@ -57,10 +57,16 @@ exports.handler = async (event, context) => {
     // 查询帖子详情
     let post;
     try {
-      post = await postsCollection.findOne({ _id: new ObjectId(postId) });
+      // 验证并转换 ObjectId
+      if (ObjectId.isValid(postId)) {
+        post = await postsCollection.findOne({ _id: new ObjectId(postId) });
+      } else {
+        // 如果不是有效的 ObjectId，直接作为字符串查询
+        post = await postsCollection.findOne({ _id: postId });
+      }
     } catch (err) {
-      // 如果 ObjectId 转换失败，尝试直接查询字符串
-      post = await postsCollection.findOne({ _id: postId });
+      console.error('查询帖子失败:', err);
+      post = null;
     }
 
     if (!post) {

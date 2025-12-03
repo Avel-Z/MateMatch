@@ -104,53 +104,63 @@ exports.handler = async (event, context) => {
     // 查询总数
     const total = await postsCollection.countDocuments(query);
 
-    // 关联查询作者信息并计算距离
-    const enrichedPosts = await Promise.all(
-      posts.map(async (post) => {
-        // 查询作者信息
-        const author = await usersCollection.findOne(
-          { _id: post.author_id },
-          { projection: { nickname: 1, avatarUrl: 1 } }
-        );
+    // 收集所有作者ID并批量查询作者信息（优化N+1查询问题）
+    const authorIds = [...new Set(posts.map(post => post.author_id))];
+    const authors = await usersCollection
+      .find(
+        { _id: { $in: authorIds } },
+        { projection: { nickname: 1, avatarUrl: 1 } }
+      )
+      .toArray();
+    
+    // 创建作者信息映射
+    const authorMap = new Map();
+    authors.forEach(author => {
+      authorMap.set(author._id.toString(), author);
+    });
 
-        // 计算距离
-        let distance_m;
-        if (
-          userLocation &&
-          userLocation.latitude &&
-          userLocation.longitude &&
-          post.location_coords &&
-          post.location_coords.latitude &&
+    // 关联作者信息并计算距离
+    const enrichedPosts = posts.map((post) => {
+      // 从映射中获取作者信息
+      const author = authorMap.get(post.author_id.toString());
+
+      // 计算距离
+      let distance_m;
+      if (
+        userLocation &&
+        userLocation.latitude &&
+        userLocation.longitude &&
+        post.location_coords &&
+        post.location_coords.latitude &&
+        post.location_coords.longitude
+      ) {
+        distance_m = calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          post.location_coords.latitude,
           post.location_coords.longitude
-        ) {
-          distance_m = calculateDistance(
-            userLocation.latitude,
-            userLocation.longitude,
-            post.location_coords.latitude,
-            post.location_coords.longitude
-          );
-        }
+        );
+      }
 
-        return {
-          _id: post._id,
-          title: post.title,
-          description: post.description,
-          event_time: post.event_time,
-          location_text: post.location_text,
-          images: post.images || [],
-          fav_count: post.fav_count || 0,
-          created_at: post.created_at,
-          category: post.category,
-          author: author
-            ? {
-                nickname: author.nickname,
-                avatarUrl: author.avatarUrl,
-              }
-            : null,
-          distance_m: distance_m,
-        };
-      })
-    );
+      return {
+        _id: post._id,
+        title: post.title,
+        description: post.description,
+        event_time: post.event_time,
+        location_text: post.location_text,
+        images: post.images || [],
+        fav_count: post.fav_count || 0,
+        created_at: post.created_at,
+        category: post.category,
+        author: author
+          ? {
+              nickname: author.nickname,
+              avatarUrl: author.avatarUrl,
+            }
+          : null,
+        distance_m: distance_m,
+      };
+    });
 
     // 判断是否还有更多数据
     const hasMore = skip + posts.length < total;

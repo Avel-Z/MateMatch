@@ -236,8 +236,8 @@ export default {
           if (index !== -1) {
             this.posts[index].is_favorited = isFavorite;
             this.posts[index].fav_count = isFavorite
-              ? this.posts[index].fav_count + 1
-              : this.posts[index].fav_count - 1;
+              ? (this.posts[index].fav_count || 0) + 1
+              : Math.max((this.posts[index].fav_count || 0) - 1, 0);
           }
 
           uni.showToast({

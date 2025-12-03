@@ -113,7 +113,7 @@ exports.handler = async (event, context) => {
       )
       .toArray();
     
-    // 创建作者信息映射
+    // 创建作者信息映射（使用字符串作为key以确保一致性）
     const authorMap = new Map();
     authors.forEach(author => {
       authorMap.set(author._id.toString(), author);

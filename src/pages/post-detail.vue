@@ -174,8 +174,8 @@ export default {
         if (response.code === 0) {
           this.isFavorited = newFavoriteState;
           this.post.fav_count = newFavoriteState
-            ? this.post.fav_count + 1
-            : this.post.fav_count - 1;
+            ? (this.post.fav_count || 0) + 1
+            : Math.max((this.post.fav_count || 0) - 1, 0);
 
           uni.showToast({
             title: newFavoriteState ? '收藏成功' : '取消收藏',

@@ -1,0 +1,66 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 标题 -->
+  <view class="page-title">附近的搭子</view>
+  
+  <!-- 需求列表 -->
+  <scroll-view 
+    class="need-list" 
+    scroll-y 
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+    bindscrolltolower="onLoadMore"
+  >
+    <view wx:if="{{needList.length > 0}}">
+      <view 
+        wx:for="{{needList}}" 
+        wx:key="id" 
+        class="need-card"
+        bindtap="goToDetail"
+        data-id="{{item.id}}"
+      >
+        <!-- 卡片头部 -->
+        <view class="card-header">
+          <view class="type-tag tag tag-primary">{{item.type}}</view>
+          <view class="time-info text-gray">{{item.date}} {{item.time}}</view>
+        </view>
+        
+        <!-- 标题 -->
+        <view class="card-title">{{item.title}}</view>
+        
+        <!-- 位置 -->
+        <view class="location">
+          <text class="icon">📍</text>
+          <text>{{item.location}}</text>
+        </view>
+        
+        <!-- 描述 -->
+        <view class="description text-gray">{{item.description}}</view>
+        
+        <!-- 费用 -->
+        <view class="cost">
+          <text class="icon">💰</text>
+          <text class="text-primary">{{item.cost}}</text>
+        </view>
+        
+        <!-- 发布者信息 -->
+        <view class="publisher">
+          <image class="avatar" src="{{item.publisherAvatar}}" mode="aspectFill"></image>
+          <text class="name">{{item.publisherName}}</text>
+          <text class="time text-gray">{{item.createTime}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 空状态 -->
+    <view wx:else class="empty-state">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无需求，快去发布一个吧！</text>
+    </view>
+    
+    <!-- 加载更多提示 -->
+    <view wx:if="{{hasMore}}" class="loading-more">加载更多...</view>
+    <view wx:else class="no-more">没有更多了</view>
+  </scroll-view>
+</view>

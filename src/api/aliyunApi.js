@@ -36,7 +36,8 @@ async function cloudRequest(functionName, data = {}) {
     if (response.code === 0) {
       return response;
     } else {
-      throw new Error(response.msg || '请求失败');
+      // 返回响应对象，让调用方根据 code 字段处理错误
+      return response;
     }
   } catch (error) {
     console.error(`云函数调用失败 [${functionName}]:`, error);

@@ -113,7 +113,7 @@ exports.handler = async (event, context) => {
           }),
         };
       } catch (error) {
-        // 如果是重复收藏，返回已收藏
+        // 如果是重复收藏（MongoDB duplicate key error code: 11000），返回已收藏
         if (error.code === 11000) {
           return {
             statusCode: 200,

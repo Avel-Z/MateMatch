@@ -1,0 +1,15 @@
+{
+  "name": "matematch-cloud",
+  "version": "1.0.0",
+  "description": "MateMatch 云函数和数据库设置",
+  "scripts": {
+    "setup": "node setup-database.js",
+    "test:queryPosts": "cd functions/queryPosts && node test-queryPosts.js",
+    "test:getPost": "cd functions/getPost && node test-getPost.js",
+    "install:all": "cd functions/queryPosts && npm install && cd ../getPost && npm install"
+  },
+  "dependencies": {
+    "mongodb": "^4.0.0",
+    "dotenv": "^16.0.0"
+  }
+}

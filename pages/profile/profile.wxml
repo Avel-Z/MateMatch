@@ -1,0 +1,129 @@
+<!--pages/profile/profile.wxml-->
+<view class="container">
+  <!-- 未登录状态 -->
+  <view wx:if="{{!isLoggedIn}}" class="login-section">
+    <view class="welcome-card card">
+      <text class="welcome-icon">👋</text>
+      <view class="welcome-title">欢迎来到 MateMatch</view>
+      <view class="welcome-desc">完善个人信息，开始找搭子吧！</view>
+    </view>
+    
+    <view class="form-card card">
+      <view class="form-item">
+        <view class="label required">昵称</view>
+        <input 
+          class="input" 
+          placeholder="请输入昵称" 
+          value="{{formData.nickname}}"
+          bindinput="onNicknameInput"
+          maxlength="20"
+        />
+      </view>
+      
+      <view class="form-item">
+        <view class="label required">微信号</view>
+        <input 
+          class="input" 
+          placeholder="用于他人联系你" 
+          value="{{formData.wechatId}}"
+          bindinput="onWechatIdInput"
+          maxlength="30"
+        />
+        <view class="hint">其他人通过此微信号联系你</view>
+      </view>
+      
+      <button class="btn-primary" bindtap="onRegister">完成注册</button>
+    </view>
+  </view>
+  
+  <!-- 已登录状态 -->
+  <view wx:else>
+    <!-- 用户信息卡片 -->
+    <view class="user-card card">
+      <image class="avatar" src="{{userInfo.avatar}}" mode="aspectFill"></image>
+      <view class="user-info">
+        <view class="nickname">{{userInfo.nickname}}</view>
+        <view class="wechat-id text-gray">微信号：{{userInfo.wechatId}}</view>
+      </view>
+      <button class="edit-btn" bindtap="showEditDialog">编辑</button>
+    </view>
+    
+    <!-- 我的发布 -->
+    <view class="my-needs-section">
+      <view class="section-title">我的发布</view>
+      
+      <view wx:if="{{myNeeds.length > 0}}">
+        <view 
+          wx:for="{{myNeeds}}" 
+          wx:key="id" 
+          class="need-item card"
+        >
+          <view class="need-header">
+            <view class="type-tag tag tag-primary">{{item.type}}</view>
+            <view class="time text-gray">{{item.date}} {{item.time}}</view>
+          </view>
+          <view class="need-title">{{item.title}}</view>
+          <view class="need-location">
+            <text class="icon">📍</text>
+            <text>{{item.location}}</text>
+          </view>
+          <view class="actions">
+            <button 
+              class="action-btn edit" 
+              bindtap="editNeed" 
+              data-id="{{item.id}}"
+            >
+              编辑
+            </button>
+            <button 
+              class="action-btn delete" 
+              bindtap="deleteNeed" 
+              data-id="{{item.id}}"
+            >
+              删除
+            </button>
+          </view>
+        </view>
+      </view>
+      
+      <view wx:else class="empty-state">
+        <text class="empty-icon">📝</text>
+        <text class="empty-text">还没有发布过需求</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 编辑弹窗 -->
+<view wx:if="{{showEdit}}" class="modal-mask" bindtap="hideEditDialog">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-title">编辑个人信息</view>
+    
+    <view class="form-item">
+      <view class="label required">昵称</view>
+      <input 
+        class="input" 
+        placeholder="请输入昵称" 
+        value="{{editFormData.nickname}}"
+        bindinput="onEditNicknameInput"
+        maxlength="20"
+      />
+    </view>
+    
+    <view class="form-item">
+      <view class="label required">微信号</view>
+      <input 
+        class="input" 
+        placeholder="用于他人联系你" 
+        value="{{editFormData.wechatId}}"
+        bindinput="onEditWechatIdInput"
+        maxlength="30"
+      />
+    </view>
+    
+    <view class="modal-actions">
+      <button class="btn-secondary" bindtap="hideEditDialog">取消</button>
+      <button class="btn-primary" bindtap="onSaveEdit">保存</button>
+    </view>
+  </view>
+</view>

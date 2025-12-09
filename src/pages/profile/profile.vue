@@ -92,7 +92,7 @@
     
     <!-- 编辑弹窗 -->
     <view v-if="showEdit" class="modal-mask" @tap="hideEditDialog">
-      <view class="modal-content" @tap.stop="stopPropagation">
+      <view class="modal-content" @tap.stop>
         <view class="modal-title">编辑个人信息</view>
         
         <view class="form-item">
@@ -241,13 +241,6 @@ const showEditDialog = () => {
  */
 const hideEditDialog = () => {
   showEdit.value = false
-}
-
-/**
- * 阻止冒泡
- */
-const stopPropagation = () => {
-  // 阻止点击事件冒泡
 }
 
 /**

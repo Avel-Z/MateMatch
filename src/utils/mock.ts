@@ -72,7 +72,7 @@ export const getMockNeeds = (): Need[] => {
 export const initMockData = (): void => {
   try {
     const localNeeds = uni.getStorageSync('needs')
-    if (!localNeeds || localNeeds.length === 0) {
+    if (!localNeeds || !Array.isArray(localNeeds) || localNeeds.length === 0) {
       uni.setStorageSync('needs', mockNeeds)
     }
   } catch (e) {

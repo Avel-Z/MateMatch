@@ -14,6 +14,14 @@ App({
     if (!wx.getStorageSync('userInfo')) {
       wx.setStorageSync('userInfo', null);
     }
+    // 初始化会话列表
+    if (!wx.getStorageSync('conversations')) {
+      wx.setStorageSync('conversations', []);
+    }
+    // 初始化消息列表
+    if (!wx.getStorageSync('messages')) {
+      wx.setStorageSync('messages', []);
+    }
   },
 
   globalData: {

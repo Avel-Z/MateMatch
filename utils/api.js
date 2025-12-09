@@ -179,6 +179,124 @@ const updateUserInfo = (userInfo) => {
   }
 }
 
+/**
+ * 获取会话列表
+ */
+const getConversations = (userId) => {
+  try {
+    const conversations = wx.getStorageSync('conversations') || []
+    const messages = wx.getStorageSync('messages') || []
+    
+    return conversations
+      .filter(conv => conv.participants.includes(userId))
+      .map(conv => {
+        const otherUserId = conv.participants.find(id => id !== userId)
+        const unreadCount = messages.filter(msg => 
+          msg.conversationId === conv._id && 
+          msg.senderId === otherUserId && 
+          !msg.read
+        ).length
+        
+        return {
+          ...conv,
+          otherUserId,
+          unreadCount
+        }
+      })
+      .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
+  } catch (e) {
+    console.error('获取会话列表失败', e)
+    return []
+  }
+}
+
+/**
+ * 创建或获取会话
+ */
+const createConversation = (userId, targetUserId, postId, postTitle) => {
+  try {
+    if (userId === targetUserId) {
+      return { success: false, message: '不能与自己对话' }
+    }
+
+    const conversations = wx.getStorageSync('conversations') || []
+    const ids = [userId, targetUserId].sort()
+    const conversationId = `${ids[0]}_${ids[1]}`
+
+    let conversation = conversations.find(c => c._id === conversationId)
+
+    if (!conversation) {
+      conversation = {
+        _id: conversationId,
+        participants: [userId, targetUserId],
+        postId: postId || '',
+        postTitle: postTitle || '',
+        lastMessage: '',
+        lastMessageTime: new Date(),
+        createdAt: new Date()
+      }
+      
+      conversations.push(conversation)
+      wx.setStorageSync('conversations', conversations)
+    }
+
+    return { success: true, data: conversation }
+  } catch (e) {
+    console.error('创建会话失败', e)
+    return { success: false, message: '创建失败' }
+  }
+}
+
+/**
+ * 获取消息列表
+ */
+const getMessages = (conversationId) => {
+  try {
+    const messages = wx.getStorageSync('messages') || []
+    return messages.filter(msg => msg.conversationId === conversationId)
+  } catch (e) {
+    console.error('获取消息列表失败', e)
+    return []
+  }
+}
+
+/**
+ * 发送消息
+ */
+const sendMessage = (conversationId, senderId, senderName, senderAvatar, content) => {
+  try {
+    const messages = wx.getStorageSync('messages') || []
+    const conversations = wx.getStorageSync('conversations') || []
+    
+    const message = {
+      _id: util.generateId(),
+      conversationId,
+      senderId,
+      senderName,
+      senderAvatar,
+      content,
+      createdAt: new Date(),
+      read: false
+    }
+
+    messages.push(message)
+    wx.setStorageSync('messages', messages)
+
+    // 更新会话的最后消息
+    const convIndex = conversations.findIndex(c => c._id === conversationId)
+    if (convIndex !== -1) {
+      conversations[convIndex].lastMessage = content
+      conversations[convIndex].lastMessageTime = new Date()
+      wx.setStorageSync('conversations', conversations)
+    }
+
+    return { success: true, data: message }
+  } catch (e) {
+    console.error('发送消息失败', e)
+    return { success: false, message: '发送失败' }
+  }
+}
+
 module.exports = {
   getNeeds,
   getNeedById,
@@ -188,5 +306,9 @@ module.exports = {
   getUserNeeds,
   saveUserInfo,
   getUserInfo,
-  updateUserInfo
+  updateUserInfo,
+  getConversations,
+  createConversation,
+  getMessages,
+  sendMessage
 }

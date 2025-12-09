@@ -3,7 +3,9 @@
     "pages/index/index",
     "pages/detail/detail",
     "pages/publish/publish",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/chat/chat",
+    "pages/messages/messages"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -23,6 +25,12 @@
         "text": "首页",
         "iconPath": "images/home.png",
         "selectedIconPath": "images/home-active.png"
+      },
+      {
+        "pagePath": "pages/messages/messages",
+        "text": "消息",
+        "iconPath": "images/message.png",
+        "selectedIconPath": "images/message-active.png"
       },
       {
         "pagePath": "pages/publish/publish",

@@ -1,0 +1,45 @@
+<!--pages/messages/messages.wxml-->
+<view class="container">
+  <!-- 会话列表 -->
+  <view class="conversations-list" wx:if="{{conversations.length > 0}}">
+    <view 
+      class="conversation-item" 
+      wx:for="{{conversations}}" 
+      wx:key="_id"
+      bindtap="enterChat"
+      data-conversation="{{item}}"
+    >
+      <view class="avatar-wrapper">
+        <image class="avatar" src="{{item.otherUserAvatar}}" mode="aspectFill"></image>
+        <view class="unread-badge" wx:if="{{item.unreadCount > 0}}">
+          <text>{{item.unreadCount > 99 ? '99+' : item.unreadCount}}</text>
+        </view>
+      </view>
+      
+      <view class="conversation-content">
+        <view class="top-row">
+          <text class="name">{{item.otherUserName}}</text>
+          <text class="time">{{formatTime(item.lastMessageTime)}}</text>
+        </view>
+        <view class="bottom-row">
+          <text class="last-message">{{item.lastMessage || '开始对话'}}</text>
+          <view class="post-tag" wx:if="{{item.postTitle}}">
+            <text>{{item.postTitle}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{conversations.length === 0 && !loading}}">
+    <text class="empty-icon">💬</text>
+    <text class="empty-title">暂无消息</text>
+    <text class="empty-desc">在帖子详情页发起对话后，消息会显示在这里</text>
+  </view>
+</view>

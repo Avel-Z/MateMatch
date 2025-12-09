@@ -1,0 +1,74 @@
+<!--pages/chat/chat.wxml-->
+<view class="chat-container">
+  <!-- 消息列表 -->
+  <scroll-view 
+    class="messages-list" 
+    scroll-y 
+    scroll-into-view="{{scrollIntoView}}"
+    enable-back-to-top
+  >
+    <view class="message-item" 
+      wx:for="{{messages}}" 
+      wx:key="_id"
+      id="msg-{{index}}"
+    >
+      <!-- 对方的消息（左侧） -->
+      <view class="message-left" wx:if="{{item.senderId !== currentUserId}}">
+        <image class="avatar" src="{{otherUser.avatarUrl}}" mode="aspectFill"></image>
+        <view class="message-content">
+          <view class="message-bubble message-bubble-other">
+            <text>{{item.content}}</text>
+          </view>
+          <view class="message-time">{{formatMessageTime(item.createdAt)}}</view>
+        </view>
+      </view>
+
+      <!-- 自己的消息（右侧） -->
+      <view class="message-right" wx:else>
+        <view class="message-content">
+          <view class="message-bubble message-bubble-self">
+            <text>{{item.content}}</text>
+          </view>
+          <view class="message-time">{{formatMessageTime(item.createdAt)}}</view>
+        </view>
+        <image class="avatar" src="{{item.senderAvatar}}" mode="aspectFill"></image>
+      </view>
+    </view>
+
+    <!-- 加载中提示 -->
+    <view class="loading-tip" wx:if="{{loading}}">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 没有更多提示 -->
+    <view class="no-more-tip" wx:if="{{!hasMore && messages.length > 0}}">
+      <text>没有更多消息了</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{messages.length === 0 && !loading}}">
+      <text class="empty-icon">💬</text>
+      <text class="empty-text">暂无消息，快来开始对话吧</text>
+    </view>
+  </scroll-view>
+
+  <!-- 输入框 -->
+  <view class="input-bar">
+    <input 
+      class="message-input"
+      type="text"
+      value="{{inputText}}"
+      bindinput="onInputChange"
+      placeholder="输入消息..."
+      confirm-type="send"
+      bindconfirm="sendMessage"
+    />
+    <button 
+      class="send-btn" 
+      bindtap="sendMessage"
+      disabled="{{!inputText.trim()}}"
+    >
+      发送
+    </button>
+  </view>
+</view>

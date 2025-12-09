@@ -49,9 +49,17 @@
       </view>
     </view>
     
-    <!-- 获取微信号按钮 -->
+    <!-- 发起对话按钮 -->
     <button 
       class="btn-primary contact-btn" 
+      bindtap="startChat"
+    >
+      发起对话
+    </button>
+    
+    <!-- 获取微信号按钮 -->
+    <button 
+      class="btn-secondary contact-btn" 
       bindtap="showWechatId"
       wx:if="{{!wechatIdVisible}}"
     >

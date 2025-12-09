@@ -95,7 +95,7 @@ Page({
     const conversation = e.currentTarget.dataset.conversation
     
     wx.navigateTo({
-      url: `/pages/chat/chat?conversationId=${conversation._id}&otherUserId=${conversation.otherUserId}&otherUserName=${conversation.otherUserName}&otherUserAvatar=${conversation.otherUserAvatar}`
+      url: `/pages/chat/chat?conversationId=${conversation._id}&otherUserId=${encodeURIComponent(conversation.otherUserId)}&otherUserName=${encodeURIComponent(conversation.otherUserName)}&otherUserAvatar=${encodeURIComponent(conversation.otherUserAvatar)}`
     })
   },
 

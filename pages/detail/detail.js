@@ -123,7 +123,7 @@ Page({
 
     // 跳转到聊天页面
     wx.navigateTo({
-      url: `/pages/chat/chat?conversationId=${conversationId}&otherUserId=${this.data.need.publisherId}&otherUserName=${this.data.need.publisherName}&otherUserAvatar=${this.data.need.publisherAvatar}`
+      url: `/pages/chat/chat?conversationId=${conversationId}&otherUserId=${encodeURIComponent(this.data.need.publisherId)}&otherUserName=${encodeURIComponent(this.data.need.publisherName)}&otherUserAvatar=${encodeURIComponent(this.data.need.publisherAvatar)}`
     })
   }
 })

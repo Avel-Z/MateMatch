@@ -42,19 +42,23 @@ Page({
       return
     }
 
+    // 解码 URL 参数
+    const decodedOtherUserName = decodeURIComponent(otherUserName || '对方')
+    const decodedOtherUserAvatar = decodeURIComponent(otherUserAvatar || '/images/avatar-default.png')
+
     this.setData({
       conversationId,
       currentUserId: userInfo.id,
       otherUser: {
         _id: otherUserId,
-        nickname: otherUserName || '对方',
-        avatarUrl: otherUserAvatar || '/images/avatar-default.png'
+        nickname: decodedOtherUserName,
+        avatarUrl: decodedOtherUserAvatar
       }
     })
 
     // 设置导航栏标题
     wx.setNavigationBarTitle({
-      title: otherUserName || '对话'
+      title: decodedOtherUserName
     })
 
     this.loadMessages()

@@ -1,0 +1,10 @@
+{
+  "name": "queryPosts",
+  "version": "1.0.0",
+  "description": "查询帖子列表云函数",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {
+    "mongodb": "^4.0.0"
+  }
+}

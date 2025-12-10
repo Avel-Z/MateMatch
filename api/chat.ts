@@ -164,6 +164,26 @@ export const createOrGetConversation = (data: CreateConversationData): ApiRespon
       return { success: true, data: conversation }
     }
     
+    // 获取目标用户信息（从需求中获取发布者信息）
+    const needs = uni.getStorageSync('needs') || []
+    const need = needs.find((n: any) => n.id === data.needId)
+    
+    // 构建参与者信息映射
+    const participantInfo: Record<string, { name: string; avatar: string }> = {
+      [userInfo.id]: {
+        name: userInfo.nickname,
+        avatar: userInfo.avatar
+      }
+    }
+    
+    // 如果找到需求，添加目标用户信息
+    if (need) {
+      participantInfo[data.targetUserId] = {
+        name: need.publisherName,
+        avatar: need.publisherAvatar
+      }
+    }
+    
     // 创建新会话
     const newConversation: Conversation = {
       id: conversationId,
@@ -173,7 +193,8 @@ export const createOrGetConversation = (data: CreateConversationData): ApiRespon
       lastMessage: '',
       lastMessageTime: formatTime(new Date()),
       unreadCount: 0,
-      createdAt: formatTime(new Date())
+      createdAt: formatTime(new Date()),
+      participantInfo: participantInfo
     }
     
     conversations.push(newConversation)

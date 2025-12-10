@@ -132,7 +132,7 @@ onLoad((options: any) => {
       return
     }
     
-    needTitle.value = need.needTitle || need.title
+    needTitle.value = need.title
     otherUserId.value = targetUserId
     otherUserName.value = need.publisherName
     otherUserAvatar.value = need.publisherAvatar
@@ -187,11 +187,17 @@ const loadConversation = (convId: string) => {
   if (otherUid) {
     otherUserId.value = otherUid
     
-    // 从需求中获取用户信息
-    const need = getNeedById(conv.needId)
-    if (need && need.publisherId === otherUid) {
-      otherUserName.value = need.publisherName
-      otherUserAvatar.value = need.publisherAvatar
+    // 优先从会话的参与者信息中获取
+    if (conv.participantInfo && conv.participantInfo[otherUid]) {
+      otherUserName.value = conv.participantInfo[otherUid].name
+      otherUserAvatar.value = conv.participantInfo[otherUid].avatar
+    } else {
+      // 兼容旧数据：从需求中获取用户信息
+      const need = getNeedById(conv.needId)
+      if (need && need.publisherId === otherUid) {
+        otherUserName.value = need.publisherName
+        otherUserAvatar.value = need.publisherAvatar
+      }
     }
   }
   

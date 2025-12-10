@@ -28,6 +28,8 @@ export interface Conversation {
   lastMessageTime: string   // 最后消息时间
   unreadCount: number       // 未读消息数
   createdAt: string
+  // 参与者信息映射 { userId: { name, avatar } }
+  participantInfo?: Record<string, { name: string; avatar: string }>
 }
 
 /**

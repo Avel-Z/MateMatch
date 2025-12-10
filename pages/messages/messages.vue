@@ -93,10 +93,20 @@ const getOtherUserAvatar = (conv: Conversation): string => {
   const otherUserId = conv.participantIds.find(id => id !== currentUser.value!.id)
   if (!otherUserId) return '/static/images/avatar-default.png'
   
-  // 从关联的需求中获取发布者信息
+  // 优先从会话的参与者信息中获取
+  if (conv.participantInfo && conv.participantInfo[otherUserId]) {
+    return conv.participantInfo[otherUserId].avatar
+  }
+  
+  // 兼容旧数据：从关联的需求中获取发布者信息
   const need = getNeedById(conv.needId)
-  if (need && need.publisherId === otherUserId) {
-    return need.publisherAvatar
+  if (need) {
+    // 如果对方是发布者，返回发布者头像
+    if (need.publisherId === otherUserId) {
+      return need.publisherAvatar
+    }
+    // 如果当前用户是发布者，对方是其他用户，使用默认头像
+    // 因为我们只存储了发布者信息，没有存储其他用户信息
   }
   
   return '/static/images/avatar-default.png'
@@ -111,10 +121,20 @@ const getOtherUserName = (conv: Conversation): string => {
   const otherUserId = conv.participantIds.find(id => id !== currentUser.value!.id)
   if (!otherUserId) return '未知用户'
   
-  // 从关联的需求中获取发布者信息
+  // 优先从会话的参与者信息中获取
+  if (conv.participantInfo && conv.participantInfo[otherUserId]) {
+    return conv.participantInfo[otherUserId].name
+  }
+  
+  // 兼容旧数据：从关联的需求中获取发布者信息
   const need = getNeedById(conv.needId)
-  if (need && need.publisherId === otherUserId) {
-    return need.publisherName
+  if (need) {
+    // 如果对方是发布者，返回发布者昵称
+    if (need.publisherId === otherUserId) {
+      return need.publisherName
+    }
+    // 如果当前用户是发布者，对方是其他用户，使用默认名称
+    // 因为我们只存储了发布者信息，没有存储其他用户信息
   }
   
   return '未知用户'

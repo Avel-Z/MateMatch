@@ -33,7 +33,19 @@
         "navigationBarBackgroundColor": "#4CAF93",
         "navigationBarTextStyle": "white"
       }
-    }
+	},
+	{
+		"path": "pages/web-login/web-login",
+		"style": {
+			"navigationBarTitleText": ""
+		}
+	},
+	{
+		"path": "pages/favorites/favorites",
+		"style": {
+			"navigationBarTitleText": ""
+		}
+	}
   ],
   "globalStyle": {
     "navigationBarTextStyle": "white",

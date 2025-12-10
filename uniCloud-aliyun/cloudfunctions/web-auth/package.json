@@ -1,0 +1,7 @@
+{
+  "name": "web-auth",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-jql": {}
+  }
+}

@@ -192,7 +192,7 @@ const loadConversation = (convId: string) => {
       otherUserName.value = conv.participantInfo[otherUid].name
       otherUserAvatar.value = conv.participantInfo[otherUid].avatar
     } else {
-      // 兼容旧数据：从需求中获取用户信息
+      // 兼容旧数据：从需求中获取用户信息（只查询一次）
       const need = getNeedById(conv.needId)
       if (need && need.publisherId === otherUid) {
         otherUserName.value = need.publisherName

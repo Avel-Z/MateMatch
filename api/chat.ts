@@ -34,9 +34,14 @@ export const getConversations = (userId: string): Conversation[] => {
       conv.unreadCount = unreadMessages.length
     })
     // 按最后消息时间倒序排列
-    userConversations.sort((a: Conversation, b: Conversation) => 
-      new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
-    )
+    userConversations.sort((a: Conversation, b: Conversation) => {
+      const timeA = new Date(a.lastMessageTime).getTime()
+      const timeB = new Date(b.lastMessageTime).getTime()
+      // 处理无效日期，将其排到最后
+      if (isNaN(timeA)) return 1
+      if (isNaN(timeB)) return -1
+      return timeB - timeA
+    })
     return userConversations
   } catch (e) {
     console.error('获取会话列表失败', e)

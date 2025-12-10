@@ -93,9 +93,10 @@ const getOtherUserInfo = (conv: Conversation): { avatar: string; name: string } 
     name: '未知用户' 
   }
   
-  if (!currentUser.value) return defaultInfo
+  const user = currentUser.value
+  if (!user) return defaultInfo
   
-  const otherUserId = conv.participantIds.find(id => id !== currentUser.value!.id)
+  const otherUserId = conv.participantIds.find(id => id !== user.id)
   if (!otherUserId) return defaultInfo
   
   // 优先从会话的参与者信息中获取
@@ -139,6 +140,9 @@ const formatMessageTime = (timeStr: string): string => {
   if (!timeStr) return ''
   
   const msgTime = new Date(timeStr)
+  // 检查日期是否有效
+  if (isNaN(msgTime.getTime())) return ''
+  
   const now = new Date()
   const diff = now.getTime() - msgTime.getTime()
   

@@ -267,6 +267,9 @@ const formatTime = (timeStr: string): string => {
   if (!timeStr) return ''
   
   const msgTime = new Date(timeStr)
+  // 检查日期是否有效
+  if (isNaN(msgTime.getTime())) return ''
+  
   const hours = msgTime.getHours().toString().padStart(2, '0')
   const minutes = msgTime.getMinutes().toString().padStart(2, '0')
   return `${hours}:${minutes}`

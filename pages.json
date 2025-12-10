@@ -19,6 +19,24 @@
       }
     },
     {
+      "path": "pages/messages/messages",
+      "style": {
+        "navigationBarTitleText": "消息",
+        "navigationBarBackgroundColor": "#4CAF93",
+        "navigationBarTextStyle": "white",
+        "enablePullDownRefresh": true,
+        "backgroundTextStyle": "light"
+      }
+    },
+    {
+      "path": "pages/chat/chat",
+      "style": {
+        "navigationBarTitleText": "聊天",
+        "navigationBarBackgroundColor": "#4CAF93",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
       "path": "pages/publish/publish",
       "style": {
         "navigationBarTitleText": "发布需求",
@@ -52,6 +70,12 @@
         "text": "首页",
         "iconPath": "static/images/home.png",
         "selectedIconPath": "static/images/home-active.png"
+      },
+      {
+        "pagePath": "pages/messages/messages",
+        "text": "消息",
+        "iconPath": "static/images/message.png",
+        "selectedIconPath": "static/images/message-active.png"
       },
       {
         "pagePath": "pages/publish/publish",

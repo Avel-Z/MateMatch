@@ -49,30 +49,44 @@
         </view>
       </view>
       
-      <!-- 获取微信号按钮 -->
-      <button 
-        class="btn-primary contact-btn" 
-        @tap="showWechatId"
-        v-if="!wechatIdVisible"
-      >
-        获取微信号
-      </button>
+      <!-- 联系按钮区域 -->
+      <view v-if="!isOwnNeed" class="contact-section">
+        <!-- 联系TA按钮 -->
+        <button class="btn-primary contact-btn" @tap="contactPublisher">
+          💬 联系TA
+        </button>
+        
+        <!-- 获取微信号按钮 -->
+        <button 
+          class="btn-secondary contact-btn" 
+          @tap="showWechatId"
+          v-if="!wechatIdVisible"
+        >
+          获取微信号
+        </button>
+        
+        <!-- 微信号显示 -->
+        <view v-else class="wechat-info">
+          <text class="icon">💬</text>
+          <text class="label">微信号：</text>
+          <text class="wechat-id">{{ need.wechatId }}</text>
+          <button class="copy-btn" @tap="copyWechatId">复制</button>
+        </view>
+      </view>
       
-      <!-- 微信号显示 -->
-      <view v-else class="wechat-info">
-        <text class="icon">💬</text>
-        <text class="label">微信号：</text>
-        <text class="wechat-id">{{ need.wechatId }}</text>
-        <button class="copy-btn" @tap="copyWechatId">复制</button>
+      <!-- 自己发布的提示 -->
+      <view v-else class="own-need-tip">
+        <text class="tip-icon">📢</text>
+        <text class="tip-text">这是你发布的需求</text>
       </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { getNeedById } from '@/api/index'
+import { getNeedById, getUserInfo } from '@/api/index'
 import type { Need } from '@/types/need'
 
 // 响应式数据
@@ -93,6 +107,15 @@ const need = ref<Need>({
   status: 'active'
 })
 const wechatIdVisible = ref(false)
+
+/**
+ * 判断是否是自己发布的需求
+ */
+const isOwnNeed = computed(() => {
+  const userInfo = getUserInfo()
+  if (!userInfo) return false
+  return need.value.publisherId === userInfo.id
+})
 
 /**
  * 页面加载时
@@ -135,6 +158,25 @@ const loadNeedDetail = (id: string) => {
  */
 const showWechatId = () => {
   wechatIdVisible.value = true
+}
+
+/**
+ * 联系发布者
+ */
+const contactPublisher = () => {
+  const userInfo = getUserInfo()
+  if (!userInfo) {
+    uni.showToast({
+      title: '请先完善个人信息',
+      icon: 'none'
+    })
+    return
+  }
+  
+  // 跳转到聊天页面
+  uni.navigateTo({
+    url: `/pages/chat/chat?targetUserId=${need.value.publisherId}&needId=${need.value.id}`
+  })
 }
 
 /**
@@ -258,9 +300,43 @@ const copyWechatId = () => {
   }
 }
 
-.contact-btn {
+.contact-section {
   margin-top: $uni-spacing-xl;
+}
+
+.contact-btn {
   width: 100%;
+  margin-bottom: $uni-spacing-base;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.btn-secondary {
+  background-color: $uni-bg-color-white;
+  color: $uni-color-primary;
+  border: 1rpx solid $uni-color-primary;
+}
+
+.own-need-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: $uni-spacing-xl;
+  padding: $uni-spacing-xl;
+  background-color: $uni-color-primary-light;
+  border-radius: $uni-border-radius-base;
+  
+  .tip-icon {
+    font-size: 60rpx;
+    margin-bottom: $uni-spacing-base;
+  }
+  
+  .tip-text {
+    font-size: $uni-font-size-base;
+    color: $uni-text-color-grey;
+  }
 }
 
 .wechat-info {

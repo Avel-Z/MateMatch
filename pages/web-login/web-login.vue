@@ -23,50 +23,65 @@
 
     <button @click="handleLogin" class="login-btn" :disabled="btnDisabled">登录</button>
     <view class="register-link" @click="goToRegister">暂无账号？立即注册</view>
+   
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 import Auth from '@/utils/auth';
-import { LoginParams } from '@/types/index';
 
 // 响应式数据
 const username = ref('');
 const password = ref('');
 const btnDisabled = ref(false);
 
-// 页面加载：已登录则跳个人中心
-onMounted(() => {
-  const userId = Auth.getUserId();
-  if (userId) {
-    uni.redirectTo({ url: '/pages/profile/profile' });
+// 页面显示：检查登录态
+onShow(() => {
+  console.log('H5登录态校验：', Auth.isLogin());
+  const isLogin = Auth.isLogin();
+  if (isLogin) {
+    console.log('已登录，跳个人中心');
+    // ✅ 修复：tabbar页面用 uni.switchTab 跳转
+    uni.switchTab({ url: '/pages/profile/profile' });
   }
 });
 
 /**
- * 处理登录逻辑
+ * 处理登录逻辑（核心修复：tabbar页面用 switchTab 跳转）
  */
 const handleLogin = async () => {
-  // 基础校验
   if (!username.value || !password.value) {
     return uni.showToast({ title: '账号密码不能为空', icon: 'none' });
   }
 
   btnDisabled.value = true;
   try {
-    // 调用登录工具类
-    const loginParams: LoginParams = {
+    // 1. 执行登录
+    const userId = await Auth.initLogin('web', {
       username: username.value.trim(),
       password: password.value.trim()
-    };
-    const userId = await Auth.initLogin(loginParams);
-    
-    // 登录成功跳转个人中心
+    });
+    console.log('登录成功，用户ID：', userId);
+
+    // 2. 强制刷新缓存
+    const userInfo = Auth.getUserInfo();
+    console.log('登录后用户信息：', userInfo);
+
+    // 3. ✅ 核心修复：tabbar页面用 switchTab 跳转（替代 redirectTo）
     uni.showToast({ title: '登录成功', icon: 'success' });
-    uni.redirectTo({ url: '/pages/profile/profile' });
+    uni.switchTab({ 
+      url: '/pages/profile/profile',
+      fail: (err) => {
+        console.error('switchTab跳转失败：', err);
+        // 兜底：如果switchTab失败，用 reLaunch （关闭所有页面跳转到tabbar）
+        uni.reLaunch({ url: '/pages/profile/profile' });
+      }
+    });
+
   } catch (err) {
-    console.error('登录失败：', err);
+    console.error('登录失败详情：', err);
     uni.showToast({ title: (err as Error).message || '登录失败', icon: 'none' });
   } finally {
     btnDisabled.value = false;
@@ -74,7 +89,7 @@ const handleLogin = async () => {
 };
 
 /**
- * 跳转到注册页（可选）
+ * 跳转到注册页
  */
 const goToRegister = () => {
   uni.redirectTo({ url: '/pages/web-register/web-register' });
@@ -122,5 +137,11 @@ const goToRegister = () => {
   font-size: 26rpx;
   color: #007aff;
   margin-top: 30rpx;
+}
+.tips {
+  text-align: center;
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 20rpx;
 }
 </style>

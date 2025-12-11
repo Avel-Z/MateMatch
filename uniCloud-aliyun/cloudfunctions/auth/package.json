@@ -1,7 +1,13 @@
 {
   "name": "auth",
-  "dependencies": {},
-  "extensions": {
-    "uni-cloud-jql": {}
-  }
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "cloudfunction-config": {
+      "env": {
+        "WEIXIN_APPID": "wxf9d4454e38056ce0",
+        "WEIXIN_SECRET": "1571cc76a7a7b10f7c63385b1cd702ac"
+      }
+    },
+    "dependencies": {}
 }

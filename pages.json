@@ -45,6 +45,12 @@
 		"style": {
 			"navigationBarTitleText": ""
 		}
+	},
+	{
+		"path": "pages/web-register/web-register",
+		"style": {
+			"navigationBarTitleText": ""
+		}
 	}
   ],
   "globalStyle": {

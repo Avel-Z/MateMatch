@@ -1,88 +1,183 @@
-import { LoginParams } from '@/types/index';
-
-export default class Auth {
-  private static USER_KEY = 'user_id'; // 本地存储用户ID的key
+class Auth {
+  private static readonly USER_ID_KEY = 'mate_match_user_id';
+  private static readonly USER_INFO_KEY = 'mate_match_user_info';
 
   /**
-   * 初始化登录（跨端兼容：小程序自动登录 / Web账号密码登录）
+   * 【小程序专属】微信自动登录（H5端不会编译这段代码）
    */
-  static async initLogin(webLoginInfo?: LoginParams): Promise<string> {
-    // 优先读取本地已登录的user_id
-    const localUserId = uni.getStorageSync(this.USER_KEY);
-    if (localUserId) return localUserId;
+  // #ifdef MP-WEIXIN
+  static async wxLogin(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const timeoutTimer = setTimeout(() => {
+        reject(new Error('微信登录超时，请检查网络'));
+      }, 10000);
 
-    // 环境判断
-    const systemInfo = uni.getSystemInfoSync();
-    const isH5 = ['h5', 'browser'].includes(systemInfo.platform);
-    const isMpWeixin = typeof uni.getAccountInfoSync === 'function' && uni.getAccountInfoSync()?.miniProgram?.appId;
-
-    try {
-      let userId = '';
-      // 微信小程序端：自动登录（调用 UniCloud 云函数）
-      if (isMpWeixin) {
-        userId = await this.wechatLogin();
-      }
-      // Web端：账号密码登录
-      else if (isH5) {
-        if (!webLoginInfo?.username || !webLoginInfo.password) {
-          throw new Error('Web端请输入账号密码');
+      uni.login({
+        provider: 'weixin',
+        success: (res) => {
+          uniCloud.callFunction({
+            name: 'auth',
+            data: { action: 'wxLogin', code: res.code },
+            timeout: 10000,
+            success: (cloudRes) => {
+              clearTimeout(timeoutTimer);
+              if (cloudRes.result?.code === 0) {
+                uni.setStorageSync(Auth.USER_ID_KEY, cloudRes.result.data.user_id);
+                uni.setStorageSync(Auth.USER_INFO_KEY, cloudRes.result.data.user_info);
+                resolve(cloudRes.result.data.user_id);
+              } else {
+                reject(new Error(cloudRes.result?.msg || '微信登录失败'));
+              }
+            },
+            fail: (err) => {
+              clearTimeout(timeoutTimer);
+              reject(new Error(`服务器错误：${err.errMsg || '云函数调用失败'}`));
+            }
+          });
+        },
+        fail: (err) => {
+          clearTimeout(timeoutTimer);
+          reject(new Error(`获取微信授权失败：${err.errMsg || '请检查微信授权'}`));
         }
-        userId = await this.webAccountLogin(webLoginInfo);
-      }
-      // 其他环境：测试ID
-      else {
-        userId = 'test_user_001';
-        console.warn('非小程序/Web环境，使用测试ID');
-      }
+      });
+    });
+  }
+  // #endif
 
-      uni.setStorageSync(this.USER_KEY, userId);
-      return userId;
-    } catch (err) {
-      uni.showToast({ title: `登录失败：${(err as Error).message}`, icon: 'none' });
-      throw err;
+  /**
+   * 【H5专属】账号密码登录
+   */
+  // #ifdef H5
+  static async initLogin(type: 'web', params: { username: string; password: string }): Promise<string> {
+    if (type !== 'web') {
+      return Promise.reject(new Error('仅支持WEB端登录'));
+    }
+    return this.webLogin(params.username, params.password);
+  }
+
+  static async webLogin(username: string, password: string): Promise<string> {
+    if (!username || !password) {
+      return Promise.reject(new Error('账号/密码不能为空'));
+    }
+
+    return new Promise((resolve, reject) => {
+      const timeoutTimer = setTimeout(() => {
+        reject(new Error('登录请求超时，请检查网络'));
+      }, 10000);
+
+      uniCloud.callFunction({
+        name: 'web-auth',
+        data: { action: 'login', username: username.trim(), password: password.trim() },
+        timeout: 10000,
+        success: (res) => {
+          clearTimeout(timeoutTimer);
+          if (res.result?.code === 0) {
+            uni.setStorageSync(Auth.USER_ID_KEY, res.result.data.user_id);
+            uni.setStorageSync(Auth.USER_INFO_KEY, res.result.data.user_info);
+            resolve(res.result.data.user_id);
+          } else {
+            reject(new Error(res.result?.msg || '账号或密码错误'));
+          }
+        },
+        fail: (err) => {
+          clearTimeout(timeoutTimer);
+          reject(new Error(`服务器错误：${err.errMsg || '请稍后重试'}`));
+        }
+      });
+    });
+  }
+
+  static async webRegister(username: string, password: string, nickname: string): Promise<boolean> {
+    if (!username) return Promise.reject(new Error('账号不能为空'));
+    if (!password || password.length < 6) return Promise.reject(new Error('密码不少于6位'));
+    if (!nickname) return Promise.reject(new Error('昵称不能为空'));
+
+    return new Promise((resolve, reject) => {
+      const timeoutTimer = setTimeout(() => {
+        reject(new Error('注册请求超时，请检查网络'));
+      }, 10000);
+
+      uniCloud.callFunction({
+        name: 'web-auth',
+        data: { action: 'register', username: username.trim(), password: password.trim(), nickname: nickname.trim() },
+        timeout: 10000,
+        success: (res) => {
+          clearTimeout(timeoutTimer);
+          if (res.result?.code === 0) {
+            resolve(true);
+          } else {
+            reject(new Error(res.result?.msg || '注册失败，账号已存在'));
+          }
+        },
+        fail: (err) => {
+          clearTimeout(timeoutTimer);
+          reject(new Error(`服务器错误：${err.errMsg || '请稍后重试'}`));
+        }
+      });
+    });
+  }
+  // #endif
+
+  /**
+   * 通用方法：获取用户ID
+   */
+  static getUserId(): string {
+    try {
+      return uni.getStorageSync(Auth.USER_ID_KEY) || '';
+    } catch (e) {
+      return typeof localStorage !== 'undefined' ? localStorage.getItem(Auth.USER_ID_KEY) || '' : '';
     }
   }
 
   /**
-   * 微信小程序登录（调用 UniCloud 云函数）
+   * 通用方法：获取用户信息
    */
-  private static async wechatLogin(): Promise<string> {
-    const { code } = await uni.login();
-    if (!code) throw new Error('获取微信登录凭证失败');
-
-    const { result } = await uniCloud.callFunction({
-      name: 'auth', // 小程序登录云函数名
-      data: { code }
-    });
-
-    if (result.code !== 0) throw new Error(result.msg || '微信登录失败');
-    return result.data.user_id;
+  static getUserInfo(): {
+    username?: string;
+    nickname?: string;
+    wechat_id?: string;
+    openid?: string;
+  } {
+    try {
+      const info = uni.getStorageSync(Auth.USER_INFO_KEY);
+      return typeof info === 'object' ? info : {};
+    } catch (e) {
+      const info = typeof localStorage !== 'undefined' ? localStorage.getItem(Auth.USER_INFO_KEY) : null;
+      return info ? JSON.parse(info) : {};
+    }
   }
 
   /**
-   * Web端账号密码登录（调用 UniCloud 云函数）
-   */
-  private static async webAccountLogin({ username, password }: LoginParams): Promise<string> {
-    const { result } = await uniCloud.callFunction({
-      name: 'web-auth', // Web登录云函数名
-      data: { username, password }
-    });
-
-    if (result.code !== 0) throw new Error(result.msg || '账号密码错误');
-    return result.data.user_id;
-  }
-
-  /**
-   * 获取当前登录用户ID
-   */
-  static getUserId(): string {
-    return uni.getStorageSync(this.USER_KEY) || '';
-  }
-
-  /**
-   * 退出登录（清除本地缓存）
+   * 通用方法：退出登录
    */
   static logout(): void {
-    uni.removeStorageSync(this.USER_KEY);
+    try {
+      uni.removeStorageSync(Auth.USER_ID_KEY);
+      uni.removeStorageSync(Auth.USER_INFO_KEY);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem(Auth.USER_ID_KEY);
+        localStorage.removeItem(Auth.USER_INFO_KEY);
+      }
+    } catch (e) {
+      console.warn('退出登录时清空缓存失败：', e);
+    }
+  }
+
+  /**
+   * 通用方法：校验登录态（区分平台）
+   */
+  static isLogin(): boolean {
+    const userId = this.getUserId();
+    const userInfo = this.getUserInfo();
+    
+    // #ifdef MP-WEIXIN
+    return !!userId && !!userInfo.openid;
+    // #endif
+
+    // #ifdef H5
+    return !!userId && !!userInfo.username;
+    // #endif
   }
 }
+
+export default Auth;

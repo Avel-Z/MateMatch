@@ -1,10 +1,36 @@
-<script setup>
-import { onLaunch, onShow, onHide } from '@dcloudio/uni-app'
+<template>
+  <!-- App.vue 必须有template标签（即使为空） -->
+  <view id="app">
+    <router-view />
+  </view>
+</template>
 
-onLaunch(() => {
+<script setup>
+// 必须有script标签（uni-app 入口逻辑）
+import { onLaunch, onShow, onHide } from '@dcloudio/uni-app'
+import Auth from '@/utils/auth'
+
+onLaunch(async () => {
   console.log('App Launch')
-  // 初始化本地存储
   initStorage()
+
+  // #ifdef MP-WEIXIN
+  // 仅微信小程序执行自动登录
+  try {
+    if (!Auth.isLogin()) {
+      await Auth.wxLogin()
+      console.log('小程序自动登录成功')
+    } else {
+      console.log('已有登录态，跳过自动登录')
+    }
+  } catch (err) {
+    console.error('自动登录失败：', err.message);
+  }
+  // #endif
+
+  // #ifdef H5
+  console.log('H5端，跳过小程序自动登录逻辑')
+  // #endif
 })
 
 onShow(() => {
@@ -15,17 +41,12 @@ onHide(() => {
   console.log('App Hide')
 })
 
-/**
- * 初始化本地存储
- */
 function initStorage() {
-  // 初始化需求列表
   const needs = uni.getStorageSync('needs')
   if (!needs) {
     uni.setStorageSync('needs', [])
   }
   
-  // 初始化用户信息
   const userInfo = uni.getStorageSync('userInfo')
   if (!userInfo) {
     uni.setStorageSync('userInfo', null)
@@ -58,10 +79,9 @@ page {
   border: none;
   font-size: $uni-font-size-lg;
   padding: 24rpx;
-  
-  &:active {
-    background-color: $uni-color-primary-dark;
-  }
+}
+.btn-primary:active {
+  background-color: $uni-color-primary-dark;
 }
 
 .btn-secondary {

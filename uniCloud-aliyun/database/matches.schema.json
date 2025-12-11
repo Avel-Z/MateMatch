@@ -1,0 +1,36 @@
+{
+  "bsonType": "object",
+  "required": ["userA", "userB"],
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": true,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "配对ID"
+    },
+    "userA": {
+      "bsonType": "string",
+      "description": "用户A的ID"
+    },
+    "userB": {
+      "bsonType": "string",
+      "description": "用户B的ID"
+    },
+    "status": {
+      "bsonType": "int",
+      "description": "配对状态 1=已配对 0=已取消",
+      "default": 1
+    },
+    "matchTime": {
+      "bsonType": "long",
+      "description": "配对时间"
+    },
+    "endTime": {
+      "bsonType": "long",
+      "description": "结束时间"
+    }
+  }
+}

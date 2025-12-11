@@ -1,0 +1,43 @@
+{
+  "bsonType": "object",
+  "required": ["fromUserId", "toUserId", "content"],
+  "permission": {
+    "read": true,
+    "create": true,
+    "update": true,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "消息ID"
+    },
+    "fromUserId": {
+      "bsonType": "string",
+      "description": "发送者ID"
+    },
+    "toUserId": {
+      "bsonType": "string",
+      "description": "接收者ID"
+    },
+    "content": {
+      "bsonType": "string",
+      "description": "消息内容",
+      "maxLength": 2000
+    },
+    "type": {
+      "bsonType": "string",
+      "description": "消息类型",
+      "enum": ["text", "image", "video", "file"],
+      "default": "text"
+    },
+    "createTime": {
+      "bsonType": "long",
+      "description": "创建时间"
+    },
+    "read": {
+      "bsonType": "bool",
+      "description": "是否已读",
+      "default": false
+    }
+  }
+}

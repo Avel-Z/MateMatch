@@ -226,13 +226,36 @@ const onSubmit = () => {
     return
   }
   
-  // 检查用户信息
-  const userInfo = getUserInfo()
-  if (!userInfo) {
+  // 获取用户信息（尝试从多个来源获取）
+  let userInfo = null
+  
+  try {
+    // 方式1：从本地存储获取
+    userInfo = uni.getStorageSync('userInfo')
+    
+    // 如果是字符串，解析为JSON
+    if (typeof userInfo === 'string') {
+      userInfo = JSON.parse(userInfo)
+    }
+    
+    // 方式2：调用API函数获取
+    if (!userInfo) {
+      userInfo = getUserInfo()
+    }
+    
+    console.log('发布时获取的用户信息:', userInfo)
+    
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+  }
+  
+  // 检查用户信息是否完整
+  if (!userInfo || !userInfo.userId) {
     uni.showModal({
       title: '提示',
       content: '请先完善个人信息后再发布需求',
       confirmText: '去完善',
+      cancelText: '取消',
       success: (res) => {
         if (res.confirm) {
           uni.switchTab({
@@ -246,37 +269,67 @@ const onSubmit = () => {
   
   showLoading('发布中...')
   
-  // 创建需求
-  const result = createNeed(formData.value)
-  
-  hideLoading()
-  
-  if (result.success) {
-    uni.showToast({
-      title: '发布成功',
-      icon: 'success'
-    })
-    
-    // 重置表单
-    typeIndex.value = null
-    formData.value = {
-      type: '',
-      title: '',
-      location: '',
-      date: '',
-      time: '',
-      description: '',
-      cost: ''
+  try {
+    // 准备需求数据
+    const needData = {
+      ...formData.value,
+      id: 'need_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      userId: userInfo.userId,
+      publisherName: userInfo.nickname || '匿名用户',
+      publisherAvatar: userInfo.avatar || '/static/default-avatar.png',
+      createTime: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(),
+      status: 'active'
     }
     
-    // 跳转到首页
-    setTimeout(() => {
-      uni.switchTab({
-        url: '/pages/index/index'
+    console.log('发布的需求数据:', needData)
+    
+    // 创建需求
+    const result = createNeed(needData)
+    
+    hideLoading()
+    
+    if (result.success) {
+      uni.showToast({
+        title: '发布成功',
+        icon: 'success',
+        duration: 1500,
+        success: () => {
+          // 重置表单
+          typeIndex.value = null
+          formData.value = {
+            type: '',
+            title: '',
+            location: '',
+            date: '',
+            time: '',
+            description: '',
+            cost: ''
+          }
+          
+          // 延迟跳转
+          setTimeout(() => {
+            uni.switchTab({
+              url: '/pages/index/index'
+            })
+          }, 1500)
+        }
       })
-    }, 1500)
-  } else {
-    showToast(result.message || '发布失败')
+    } else {
+      uni.showToast({
+        title: result.message || '发布失败',
+        icon: 'error',
+        duration: 2000
+      })
+    }
+    
+  } catch (error) {
+    hideLoading()
+    console.error('发布异常:', error)
+    uni.showToast({
+      title: '发布失败，请重试',
+      icon: 'error',
+      duration: 2000
+    })
   }
 }
 </script>
@@ -319,7 +372,17 @@ const onSubmit = () => {
     }
   }
   
-  .input,
+  .input {
+    width: 100%;
+    padding: 20rpx $uni-spacing-base;  // 上下内边距从8px增加到20rpx
+    font-size: $uni-font-size-base;
+    border: 1rpx solid $uni-border-color;
+    border-radius: $uni-border-radius-base;
+    background-color: $uni-bg-color-white;
+    box-sizing: border-box;
+    min-height: 100rpx;  // 新增：最小高度
+    line-height: 1.5;   // 新增：行高，使文字垂直居中
+  }
   .picker {
     width: 100%;
     padding: $uni-spacing-base;

@@ -1,95 +1,114 @@
-// 收藏/取消收藏云函数（和你要求的名称一致）
-const db = uniCloud.database();
-const _ = db.command; // UniCloud 操作符
-const favoritesCollection = db.collection('favorites'); // 收藏表
-const needsCollection = db.collection('needs'); // 搭子需求表
+'use strict';
+/**
+ * 收藏/取消收藏帖子云函数
+ */
+
+const db = uniCloud. database();
+const dbCmd = db.command;
 
 exports.main = async (event, context) => {
   try {
-    const { action, user_id, post_id, isFavorite, page = 1, pageSize = 10 } = event;
+    const { postId, userId, isFavorite } = event;
 
-    // 1. 处理“获取收藏列表”
-    if (action === 'getFavorites') {
-      if (!user_id) {
-        return { code: 4001, msg: 'userId不能为空' };
-      }
-
-      // 分页查询收藏记录
-      const skip = (page - 1) * pageSize;
-      const favList = await favoritesCollection
-        .where({ user_id })
-        .skip(skip)
-        .limit(pageSize)
-        .orderBy('created_at', 'desc')
-        .get();
-
-      // 关联搭子需求信息
-      const list = await Promise.all(
-        favList.data.map(async (fav) => {
-          const needRes = await needsCollection.where({ _id: fav.post_id }).get();
-          return { ...fav, post_info: needRes.data[0] || null };
-        })
-      );
-
-      return { code: 0, msg: '获取成功', data: { list } };
+    // 参数校验
+    if (!postId || !userId) {
+      return {
+        code: 4001,
+        msg: '参数错误：postId 和 userId 不能为空',
+        data: null
+      };
     }
 
-    // 2. 处理“收藏/取消收藏”
-    if (!user_id || !post_id || typeof isFavorite !== 'boolean') {
-      return { code: 4001, msg: '参数错误：user_id/post_id/isFavorite 必填' };
+    if (typeof isFavorite !== 'boolean') {
+      return {
+        code: 4001,
+        msg: '参数错误：isFavorite 必须为布尔值',
+        data: null
+      };
     }
 
-    // 检查需求是否存在
-    const needRes = await needsCollection.where({ _id: post_id }).get();
-    if (needRes.data.length === 0) {
-      return { code: 4004, msg: '搭子需求不存在' };
+    const postsCollection = db.collection('posts');
+    const favoritesCollection = db.collection('favorites');
+
+    // 检查帖子是否存在
+    const postResult = await postsCollection.doc(postId).get();
+    if (!postResult.data || postResult.data.length === 0) {
+      return {
+        code: 4004,
+        msg: '帖子不存在',
+        data: null
+      };
     }
+
+    // 查询当前收藏状态
+    const existingFavorite = await favoritesCollection
+      .where({ user_id: userId, post_id: postId })
+      .limit(1)
+      .get();
+
+    const alreadyFavorited = existingFavorite.data && existingFavorite.data.length > 0;
+    let newFavCount = postResult.data[0].fav_count || 0;
+    let resultMsg = '';
 
     if (isFavorite) {
       // 收藏操作
-      // 检查是否已收藏
-      const existFav = await favoritesCollection.where({
-        user_id,
-        post_id
-      }).get();
-
-      if (existFav.data.length > 0) {
-        return { code: 0, msg: '已收藏' };
+      if (alreadyFavorited) {
+        return {
+          code: 0,
+          msg: '已经收藏过了',
+          data: { isFavorite: true, fav_count: newFavCount }
+        };
       }
 
-      // 新增收藏记录
+      // 添加收藏记录
       await favoritesCollection.add({
-        user_id,
-        post_id,
-        created_at: Date.now()
+        user_id: userId,
+        post_id: postId,
+        created_at: new Date()
       });
 
-      // 更新需求收藏数
-      await needsCollection.where({ _id: post_id }).update({
-        fav_count: _.inc(1) // 自增1
+      // 更新帖子收藏数 +1
+      await postsCollection.doc(postId).update({
+        fav_count: dbCmd.inc(1)
       });
 
-      return { code: 0, msg: '收藏成功' };
+      newFavCount += 1;
+      resultMsg = '收藏成功';
     } else {
       // 取消收藏操作
-      const deleteRes = await favoritesCollection.where({
-        user_id,
-        post_id
-      }).remove();
-
-      if (deleteRes.deleted === 0) {
-        return { code: 0, msg: '未收藏此需求' };
+      if (!alreadyFavorited) {
+        return {
+          code: 0,
+          msg: '尚未收藏',
+          data: { isFavorite:  false, fav_count: newFavCount }
+        };
       }
 
-      // 更新需求收藏数
-      await needsCollection.where({ _id: post_id }).update({
-        fav_count: _.inc(-1) // 自减1（最小为0）
+      // 删除收藏记录
+      await favoritesCollection
+        .where({ user_id: userId, post_id: postId })
+        .remove();
+
+      // 更新帖子收藏数 -1
+      await postsCollection.doc(postId).update({
+        fav_count: dbCmd.inc(-1)
       });
 
-      return { code: 0, msg: '取消收藏成功' };
+      newFavCount = Math.max(0, newFavCount - 1);
+      resultMsg = '取消收藏成功';
     }
-  } catch (err) {
-    console.error('收藏云函数错误：', err);
-    return { code: 5001, msg: '服务器错误：' + err.message };
+
+    return {
+      code: 0,
+      msg: resultMsg,
+      data: { isFavorite, fav_count: newFavCount }
+    };
+  } catch (error) {
+    console.error('toggleFavorite error:', error);
+    return {
+      code: 5001,
+      msg: '服务器错误：' + error.message,
+      data: null
+    };
   }
 };

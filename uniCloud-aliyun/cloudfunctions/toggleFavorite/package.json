@@ -1,10 +1,7 @@
 {
   "name": "toggleFavorite",
   "version": "1.0.0",
-  "description": "切换收藏状态云函数",
+  "description": "收藏切换云函数",
   "main": "index.js",
-  "scripts": {},
-  "dependencies": {
-    "mongodb": "^4.0.0"
-  }
+  "dependencies": {}
 }

@@ -1,0 +1,7 @@
+{
+  "name": "getUserPosts",
+  "version": "1.0.0",
+  "description": "获取用户帖子云函数",
+  "main": "index.js",
+  "dependencies": {}
+}
